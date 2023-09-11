@@ -16,7 +16,7 @@
     <!-- <br> -->
     <!-- <img src="{{ todo.image.url }}" style="width: 20rem; height: 10rem"> -->
     <div class="container my-5">
-      <div class="my-5">
+      <div class="my-2 form-container">
         <form id="new-todo-form" class="form-control p-5" method="post">
           {% csrf_token %}
           <h2 class="text-center">Add New Todo</h2>
@@ -42,7 +42,7 @@
             name="image"
           /><br />
           <div class="text-center mt-3">
-            <input class="btn btn-success w-25" type="submit" />
+            <input class="btn btn-success w-25" type="submit" value="Add" />
           </div>
         </form>
       </div>
@@ -62,6 +62,50 @@
     <!--  -->
 
     <script>
+      function formGen(element) {
+        var formContent = `
+          <form id="edit-todo-form-${element.id}" class="form-control p-5 h-100" method="post" enctype=multipart/form-data>
+              {% csrf_token %}
+              <label for="title">Title:</label><br />
+              <input
+                class="form-control"
+                type="text"
+                id="title"
+                value="${element.title}"
+                name="title"
+              /><br />
+              <label for="content">Content:</label><br />
+              <input
+                class="form-control"
+                type="text"
+                id="content"
+                value="${element.content}"
+                name="content"
+              /><br />
+              <img class="rounded mx-auto" src="${element.image}" style="width:100%; height:40%; object-fit:cover;">
+              <label for="image">Image:</label>
+              <input
+                class="form-control"
+                type="file"
+                id="image"
+                value="${element.image}"
+                name="image"
+              /><br />
+
+              <div class="row">
+                <div class="col">
+                  <button class="btn btn-primary w-100 edit-todo" data-todo-id="${element.id}">Edit</button>
+                </div>
+
+                <div class="col">
+                    <button class="btn btn-danger w-100">Delete</button>
+                </div>
+
+              <div>
+            </form>`;
+        return formContent;
+      }
+
       function getTodos() {
         $.ajax({
           url: "/api/todo/list/",
@@ -70,30 +114,15 @@
           success: function (data) {
             var dataContainer = $("#data-container");
             dataContainer.empty();
-            console.log(data);
-            data.forEach((element) => {
-              dataContainer.append(
-                `
-                <div class="col-md-3 my-3"> 
-                  <div class="card h-100 p-3">
-                  <h3 class="card-header text-center mb-2">${element.title}</h3>
-                  <img class="rounded mx-auto" src="${element.image}" style="width:100%; height:75%; object-fit:cover;">
-                  <p class="text-center my-3">${element.content}</p>
-                  
-                  <div class="row mt-2">
-                    <div class="col">
-                      <button class="btn btn-primary w-100">Edit</button>
-                    </div>
+            // console.log(data);
 
-                    <div class="col">
-                        <button class="btn btn-danger w-100">Delete</button>
-                    </div>
-                    
-                  <div>
-                  </div>
-                </div>
-                `
-              );
+            data.forEach((element) => {
+              htmlContent = `
+              <div class="col-md-4 my-2">
+                ${formGen(element)}
+              </div>
+            `;
+              dataContainer.append(htmlContent);
             });
           },
           error: function (xhr, status, error) {
@@ -101,10 +130,38 @@
           },
         });
       }
+
       $(document).ready(function () {
         // calling the function to get todo items
         getTodos();
 
+        // Edit
+        $("#data-container").on("click", ".edit-todo", function (e) {
+          e.preventDefault(); // Prevent the default link behavior if it's an anchor tag
+          var todoId = $(this).data("todo-id");
+          var form = $(`#edit-todo-form-${todoId}`);
+          console.log(todoId);
+
+          // Serialize the form data
+          var formData = form.serialize();
+          console.log(formData);
+          $.ajax({
+            url: `/api/todo/${todoId}/`,
+            type: "PUT",
+            data: formData,
+            dataType: "json",
+            success: function (data) {
+              console.log("Todo item updated:", data);
+            },
+            error: function (xhr, status, error) {
+              console.error("Error:", error);
+            },
+          });
+        });
+
+        // Delete
+
+        // Create new Todo
         $("#new-todo-form").submit(function (e) {
           e.preventDefault(); // Prevent the default form submission
           var formData = new FormData(this);
