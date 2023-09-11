@@ -98,7 +98,7 @@
                 </div>
 
                 <div class="col">
-                    <button class="btn btn-danger w-100">Delete</button>
+                  <button class="btn btn-danger w-100 delete-todo" data-todo-id="${element.id}">Delete</button>
                 </div>
 
               <div>
@@ -142,16 +142,29 @@
           var form = $(`#edit-todo-form-${todoId}`);
           console.log(todoId);
 
-          // Serialize the form data
-          var formData = form.serialize();
+          // Create a FormData object to handle file uploads
+          var formData = new FormData(form[0]);
+
+          // Check if the image input has a selected file
+          var imageInput = form.find('input[type="file"]');
+          var selectedImageFile = imageInput[0].files[0];
+          if (!selectedImageFile) {
+            // If no image file selected, remove the "image" field from formData
+            formData.delete("image");
+          }
           console.log(formData);
+
           $.ajax({
             url: `/api/todo/${todoId}/`,
             type: "PUT",
             data: formData,
             dataType: "json",
+            contentType: false, // Set to false to prevent jQuery from processing the data
+            processData: false, // Set to false to prevent jQuery from automatically converting data to string
             success: function (data) {
               console.log("Todo item updated:", data);
+
+              getTodos();
             },
             error: function (xhr, status, error) {
               console.error("Error:", error);
@@ -160,6 +173,28 @@
         });
 
         // Delete
+        $("#data-container").on("click", ".delete-todo", function (e) {
+          e.preventDefault();
+
+          var todoId = $(this).data("todo-id");
+          console.log(todoId);
+
+          if (confirm("Are you sure you want to delete this todo item?")) {
+            $.ajax({
+              url: `/api/todo/${todoId}/`,
+              type: "DELETE",
+              dataType: "json",
+              success: function (data) {
+                console.log(`Todo item deleted with ID: ${todoId}`);
+                getTodos();
+              },
+
+              error: function (xhr, status, error) {
+                console.error("Error:", error);
+              },
+            });
+          }
+        });
 
         // Create new Todo
         $("#new-todo-form").submit(function (e) {

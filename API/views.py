@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -34,7 +33,7 @@ class TodoDetailView(APIView):
         todo = Todo.objects.filter(pk=pk)
         if todo.exists():
             todo = todo.get()
-            serializer_data = TodoSerializer(instance=todo, data=request.data)
+            serializer_data = TodoSerializer(instance=todo, data=request.data, partial=True)
             serializer_data.is_valid(raise_exception=True)
             serializer_data.save()
             return Response(serializer_data.data, status=status.HTTP_200_OK)
