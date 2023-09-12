@@ -2,7 +2,10 @@
 
 
 
-https://github.com/mehdi-mirzaie78/Ajax-Tutorial/assets/107181484/530c47d0-eb52-43be-be52-44c323cf6bcc
+
+
+https://github.com/mehdi-mirzaie78/Ajax-Tutorial/assets/107181484/dd416ec5-4b82-4e0d-859e-f3fb43987e78
+
 
 
 
